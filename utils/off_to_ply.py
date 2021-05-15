@@ -1,3 +1,4 @@
+# 代码来自深蓝学院的课程 https://www.shenlanxueyuan.com/course/313 良心好课，十分推荐！
 # 本文件功能是把ModelNet中的.off文件转存成.ply文件
 # 如果下载的不是.off文件，则补需要执行此文件
 
