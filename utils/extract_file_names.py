@@ -1,7 +1,7 @@
 import os
 
 def extract_names_from_modelnet40():
-    """extract names from modelnet40 dataset and save it in txt file"""
+    """extract names from modelnet40 dataset and save them in .txt file"""
     num_train = 0
     num_test = 0
     with open(os.path.join(dataset_path, 'trainval.txt'), 'w') as trainval_f:
