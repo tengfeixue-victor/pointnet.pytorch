@@ -11,6 +11,7 @@ Training
 ```
 cd utils
 python train_classification.py --dataset <dataset path> --nepoch=<number epochs> --dataset_type <modelnet40 | shapenet>
+python train_segmentation.py --dataset <dataset path> --nepoch=<number epochs> 
 ```
 
 Use `--feature_transform` to use feature transform.
