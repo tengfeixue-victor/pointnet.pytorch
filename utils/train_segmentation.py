@@ -1,6 +1,8 @@
 from __future__ import print_function
 import argparse
 import os
+import sys
+sys.path.append('../')
 import random
 import torch
 import torch.nn.parallel
@@ -80,21 +82,21 @@ num_batch = len(dataset) / opt.batchSize
 for epoch in range(opt.nepoch):
     scheduler.step()
     for i, data in enumerate(dataloader, 0):
-        points, target = data
-        points = points.transpose(2, 1)
+        points, target = data  # points (batch_size, num_points, 3),  target (batch_size, num_points)
+        points = points.transpose(2, 1)  # points (batch_size, 3, num_points)
         points, target = points.cuda(), target.cuda()
         optimizer.zero_grad()
         classifier = classifier.train()
-        pred, trans, trans_feat = classifier(points)
-        pred = pred.view(-1, num_classes)
-        target = target.view(-1, 1)[:, 0] - 1
+        pred, trans, trans_feat = classifier(points)   # pred (batch_size, num_points, num_classes)
+        pred = pred.view(-1, num_classes)  # pred (batch_size*num_points, num_classes)
+        target = target.view(-1, 1)[:, 0] - 1   # target (batch_size*num_points)
         #print(pred.size(), target.size())
         loss = F.nll_loss(pred, target)
         if opt.feature_transform:
             loss += feature_transform_regularizer(trans_feat) * 0.001
         loss.backward()
         optimizer.step()
-        pred_choice = pred.data.max(1)[1]
+        pred_choice = pred.data.max(1)[1]  # (batch_size*num_points)
         correct = pred_choice.eq(target.data).cpu().sum()
         print('[%d: %d/%d] train loss: %f accuracy: %f' % (epoch, i, num_batch, loss.item(), correct.item()/float(opt.batchSize * 2500)))
 
@@ -117,12 +119,12 @@ for epoch in range(opt.nepoch):
 ## benchmark mIOU
 shape_ious = []
 for i,data in tqdm(enumerate(testdataloader, 0)):
-    points, target = data
-    points = points.transpose(2, 1)
+    points, target = data    # points (batch_size, num_points, 3), target (batch_size, num_points)
+    points = points.transpose(2, 1)  # points (batch_size,  3, num_points)
     points, target = points.cuda(), target.cuda()
     classifier = classifier.eval()
-    pred, _, _ = classifier(points)
-    pred_choice = pred.data.max(2)[1]
+    pred, _, _ = classifier(points)   # (batch_size, num_points, num_classes)
+    pred_choice = pred.data.max(2)[1]  # (batch_size, num_points)
 
     pred_np = pred_choice.cpu().data.numpy()
     target_np = target.cpu().data.numpy() - 1
@@ -140,4 +142,4 @@ for i,data in tqdm(enumerate(testdataloader, 0)):
             part_ious.append(iou)
         shape_ious.append(np.mean(part_ious))
 
-print("mIOU for class {}: {}".format(opt.class_choice, np.mean(shape_ious)))
+print("mIOU for class {}: {}".format(opt.class_choice, np.mean(shape_ious)))   # TODO: figure out what ‘class choice’ is used for later. It seems like using to quantify the mIoU class by class. 
